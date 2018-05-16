@@ -1,0 +1,77 @@
+% AutoZ ON
+% Digits 7
+
+Newtonian N
+Bodies A, B, C
+Points NA, AB, BC, CN
+
+MotionVariables' qA'', qB'', qC''
+Variables FA{2}, FC{2}
+Constants g=9.81
+Constants LA=1, LB=2, LC=2, LN=1
+ZEE_NOT = [FA1, FA2, FC1, FC2]
+
+Mass A=mA=10, B=mB=20, C=mC=20
+Inertia A, 0, mA*LA^2/12, mA*LA^2/12
+Inertia B, 0, mA*LB^2/12, mA*LB^2/12
+Inertia C, 0, mA*LC^2/12, mA*LC^2/12
+
+Simprot(N, A, 3, qA)
+Simprot(N, B, 3, qB)
+Simprot(N, C, 3, qC)
+
+P_NA_AB> = LA*A1>
+P_AB_BC> = LB*B1>
+P_CN_BC> = LC*C1>
+P_NA_CN> = LN*N2>
+P_NA_Ao> = 0.5*P_NA_AB>
+P_NA_Bo> = 0.5*P_AB_BC>
+P_NA_Co> = 0.5*P_CN_BC>
+
+w_A_N> = qA'*A3>
+w_B_N> = qA'*B3>
+w_C_N> = qA'*C3>
+
+v_NA_N> = 0>
+v2pts(N, A, NA, Ao)
+v2pts(N, A, NA, AB)
+v2pts(N, B, AB, Bo)
+v2pts(N, B, AB, BC)
+v2pts(N, C, BC, Co)
+v2pts(N, C, BC, CN)
+
+Dependent[1] = Dot(v_CN_N>, N1>)
+Dependent[2] = Dot(v_CN_N>, N2>)
+Constrain(Dependent[qB', qC'])
+
+alf_A_N> = Dt(w_A_N>, N)
+alf_B_N> = Dt(w_B_N>, N)
+alf_C_N> = Dt(w_C_N>, N)
+
+A_NA_N> = 0>
+A2pts(N, A, NA, Ao)
+A2pts(N, B, NA, AB)
+A2pts(N, B, AB, Bo)
+A2pts(N, C, BC, Co)
+
+Gravity(g*N1>)
+Force_NA> = FA1*N1> + FA2*N2>
+
+Zero=Fr() + FrStar()
+Kane()
+
+UnitSystem kg, meter, sec
+
+Input tFinal=7, integStp=0.05, absErr=1.0E-07, relErr=1.0E-07
+Input qA=30 deg, qB=74.4775129 deg, qC=45.52248781 deg
+
+Loop> = P_NA_AB> + P_AB_BC> + P_BC_CN> + P_CN_NA>
+Config[1] = Dot(Loop>, N1>)
+Config[2] = Dot(Loop>, N2>)
+ECheck = NiCheck()
+Output t, qA deg, qB deg, qC deg
+Output t, Config[1], Config[2], ECheck
+
+CODE Dynamics() tutor7.for
+
+Save tutor7.all

@@ -1,0 +1,54 @@
+Constants E, F=3, P+
+Constants Q+, r+
+Constants D2-
+Constants g=9.81
+Constants K{4}
+Constants a{1:2, 1:2}, b{1:2}
+constants rf, rr, d{1:3}, l{1:4}
+
+Variables o, H
+Variables x', y', z''
+Variables FA{2}, FC{2}
+Variables yy{2}''
+Variables dx''
+variables qq{8}'
+
+MotionVariables u{3}
+%MotionVariables' w'
+MotionVariables qA', qB', qC'
+MotionVariables' u3', u4'
+MotionVariables' qqA'', qqB'', qqC''
+MotionVariables' ww{3}'
+
+Imaginary j
+
+Specifieds Phi
+Specified Stretch'
+specified T4, T6, T7
+
+%Constants A, B, Ab, Bb
+%Constants C, D
+%Constants s, t
+%Constants a, b, c, d
+%Constants w=1
+%Constants LA, LB, LC, LN
+%Constants LA=1, LB=2, LC=2, LN=1
+%Constants k{4}
+%Constants nw3
+%constants mc, md, me, mf
+%constants ic11, ic22, ic33, ic31
+%constants id11, id22
+%constants ie11, ie22, ie33, ie31
+%constants if11, if22
+
+%Variables q, s
+%Variables a'', b''
+%Variables y{3}'
+%Variables dtheta''
+%Variables dw{3}'
+
+%Specified F=k1*x + k2*theta + k3*x' + k4*theta'
+
+
+
+

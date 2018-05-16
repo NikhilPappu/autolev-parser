@@ -1,0 +1,64 @@
+% Digits 2
+
+Newtonian N
+Bodies A, B
+Points O
+
+MotionVariables' x'', theta''
+Constants L
+Constants g
+Constants k{4}
+Specified F=k1*x + k2*theta + k3*x' + k4*theta'
+
+mass A=MA, B=MB
+Inertia B, IB=MB*L^2/12, 0, IB
+
+Simprot(N, B, 3, theta)
+
+P_O_Ao> = x*N1>
+P_Ao_Bo> = 0.5*L*B2>
+
+w_A_N> = 0>
+w_B_N> = theta'*B3>
+
+v_Ao_N> = Dt(P_O_Ao>, N)
+v2pts(N, B, Ao, Bo)
+
+Gravity(-g*N2>)
+Force_Ao> += F*N1>
+
+Zero = Fr() + FrStar()
+Kane()
+Zero := Evaluate(Zero, L=1, MA=10, MB=1, g=9.81)
+
+Variables dx''
+Variables dtheta''
+Imaginary i
+
+Check = Evaluate(Zero, x=0, x'=0, x''=0, theta=0, theta'=0, theta''=0)
+
+Perturb = Taylor(Zero, 1, x=0:dx, x'=0:dx', x''=0:dx'', theta=0:dtheta, theta'=0:dtheta', theta''=0:dtheta'')
+
+Solve(Perturb, dx'', dtheta'')
+
+Xm = [dx; dtheta; dx'; dtheta']
+Xp = [dx'; dtheta'; dx''; dtheta'']
+
+A = D(Xp, Transpose(Xm))
+
+Roots1 = Eig(evaluate(A, k1=0, k2=0, k3=0, k4=0))
+Roots2 = Eig(evaluate(A, k1=1, k2=-244, k3=5.4, k4=-59))
+
+UnitSystem kg, meter, sec
+
+Input tFinal=20, integStp=0.1, absErr=1.0E-08, relErr=1.0E-08
+Input k1=1, k2=-244, k3=5.4, k4=-59
+Input x=1 m, theta=20 deg, x'=0 m/sec, theta'=0 rad/sec
+Input dx=1 m, dtheta=20 deg, dx'=0 m/sec, dtheta'=0 rad/sec
+
+Output t sec, x meters, dx meters, theta deg, dtheta deg, F newtons
+
+% Digits 5
+CODE Dynamics() tutor8.c
+
+Save tutor8.all

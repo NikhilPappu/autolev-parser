@@ -1,0 +1,48 @@
+Bodies A
+Frames B
+Newtonian N
+Particles C,D
+Points E,F
+
+Mass A=12.5, B=mB, C=mC=10
+
+Mass_A = Mass(A)
+
+Mass_AB = Mass(A,B)
+
+I_B_P>> = 100*a1>*a1> + 200*a2>*a2> + 250*a3>*a3>
+
+Inertia A, I11, I22, I33, I12, I23, I31
+
+Mass B=mB
+
+P_Bo_P> = L*B1>
+
+I_B_BO>> = Inertia(Bo, B)
+
+Force_Q> = 7*a1>
+Force_P> += 5*a3>
+Force(P/Q, VEC>)
+
+x' = -a*x - b*y
+y' = -y - t*x^2
+
+Input a=1, b=2, x=2, y=3
+Input tFinal=5, integStp=0.1
+Output t,x,y,x',y'
+Code ODE() odexy.c
+
+Variables x, y
+Constants a, r
+eqn[1] = x^2.2 + y^2 - r
+eqn[2] = y - a*sin(x)
+
+Input a=1.0, r=1.0
+
+Code Nonlinear(eqn, x, y) katy.m
+
+Constants a{1:2, 1:2}, b{1:2}
+
+Constrain(Dependent[u2, u3])
+
+

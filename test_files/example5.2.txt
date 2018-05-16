@@ -1,0 +1,56 @@
+%AutoEpsilon 1.0E-14
+%--------------------------------------------------------
+%   Physical declarations
+Bodies A, B, C
+Points O, P
+Points CM
+
+%   Mathematical declarations
+Variables q
+Constants w=1
+
+%Mass and Inertia
+Mass    A=m=12, B=m, C=m
+Inertia A, m*w^2/12, m*w^2/12, m*w^2/6
+Inertia B, m*w^2/12, m*w^2/12, m*w^2/6
+Inertia C, m*w^2/12, m*w^2/6, m*w^2/12
+
+%   Geometry relating unit vectors
+Simprot(A, B, -2, q)
+A_C = Diagmat(3, 1)
+
+%   Position vectors
+P_O_Ao> = -0.5*w*A1> + 0.5*w*A2>
+P_O_Bo> = -w*A1> + 0.5*w*A2> + 0.5*w*B1>
+P_O_Co> = w*A2> - 0.5*w*C1> - 0.5*w*C3>
+P_O_P = w*A2> - w*C3>
+
+%   Center of mass of system
+P_O_CM = CM(O)
+uL> = Unitvec(P_O_P>)
+Distance = Mag(Cross(uL>, P_O_CM>))
+
+%   Inertia dyadic and matrix of system about its center of mass
+I_System_CM>> = Inertia(CM, A, B, C)
+I_System_CM = Matrix(A, I_System_CM>>)
+Eig(Evaluate(I_System_CM, q=90*Units(deg, rad)), Lambda, EigenVecs)
+EigenVec = Rows(EigenVec, 1)
+EigenVec> = Vector(A, EigenVec)
+AngleBetweenEigenVecAndA2 = acos(Dot(EigenVec>, A2>))*Units(rad, deg)
+
+%Moment of Inertia of system about line joining O and P
+I_System_O>> = Inertia(O)
+IL = Dot(uL>, Dot(I_System_O>>, uL>))
+%Error
+MTotal = Mass2()
+Gyration = sqrt(IL/MTotal)
+
+%   Output and units for use in program created by CODE command
+UnitSystem kg, meter, sec
+Output q degrees, Distance meters, Gyration meters
+
+CODE Algebraic() [q deg=0, 360, 1] tutor2.c
+
+Save tutor2.all
+
+

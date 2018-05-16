@@ -1,0 +1,11 @@
+Constants A, B=3
+Constants C+
+Constants D-
+Specifieds Phi
+Variables q, s
+Variables x''
+Variables y{3}'
+MotionVariables u{3}
+MotionVariables' w'
+Imaginary j
+Tina = 2*pi

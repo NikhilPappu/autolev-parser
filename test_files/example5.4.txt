@@ -1,0 +1,44 @@
+Newtonian N
+Frames A, B
+Particles P, Q
+Points O
+
+MotionVariables qA', qB'
+Constants LA, LB
+Constants k, Lo
+Constants g
+
+Mass P=mP, Q=mQ
+
+Simprot(N, A, 3, qA)
+Simprot(N, B, 3, qB)
+
+P_O_P> = LA*A1>
+P_P_Q> = LB*B1>
+
+w_A_N> = qA'*A3>
+w_B_N> = qB'*B3>
+
+v_O_N> = 0>
+v2pts(N, A, O, P)
+v2pts(N, B, P, Q)
+
+Gravity(g*N1>)
+LOQ = Mag(P_O_Q>)
+Stretch = LOQ-LO
+Uvec> = P_O_Q> / LOQ
+Force(O/Q, -k*Stretch*Uvec>)
+
+Zero = Fr()
+Zero := Factor(Zero, g)
+
+UnitSystem kg, meter, sec
+
+Input LA=1 m, LB=2 m, k=200 n/m, Lo=1 m
+Input g=9.81 m/sec^2, mP=10 kg, mQ=20 kg
+Input qA=-30 deg, qB=30deg
+Input absErr = 1.0E-07, relErr=1.0E-07
+
+Code Nonlinear(Zero, qA, qB) tutor4.c
+
+Save tutor4.all

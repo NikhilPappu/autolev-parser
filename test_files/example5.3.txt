@@ -1,0 +1,32 @@
+%   Physical declarations: Frames and Points
+Frames A, B, C, N
+Points NA, AB, BC, CN
+
+%   Mathematical declarations:  variables, constants
+Variables qA, qB, qC
+Constants LA, LB, LC, LN
+
+%   Geometry relating unit vectors
+Simprot(N, A, 3, qA)
+Simprot(N, B, 3, qB)
+Simprot(N, C, 3, qC)
+
+%   Position vectors
+P_NA_AB> = LA*A1>
+P_AB_BC> = LB*B1>
+P_CN_BC> = LC*C1>
+P_NA_CN> = LN*N2>
+
+%   Configuration constraints
+Loop> = P_NA_AB> + P_AB_BC> + P_BC_CN> + P_CN_NA>
+f1 = Dot(Loop>, N1>)
+f2 = Dot(Loop>, N2>)
+
+%   Input constants, variables, etc. for CODE
+UnitSystem kg, meter, sec
+Input LA=1 m, LB = 2 m, LC = 2 m, LN = 1 m
+Input qA = 30 deg
+Input qB = 60 deg, qC = 20 deg  % Guess
+Input absErr = 1.0E-07, relErr = 1.0E-07  % Error tolerances
+
+CODE NonLinear([f1; f2], qB, qC) tutor3.c

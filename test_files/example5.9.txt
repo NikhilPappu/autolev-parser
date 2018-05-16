@@ -1,0 +1,56 @@
+Newtonian N
+Bodies A
+Frames B
+
+MotionVariables' w{3}'
+Constants Omega
+Constants j
+
+Mass A=M
+Inertia A, I1, I2, I3
+
+w_A_N> = Vector(A, w1, w2, w3)
+w_B_N> = Omega*A3>
+
+alf_A_N> = Dt(w_A_N>, N)
+alf_B_N> = Dt(w_B_N>, A)
+
+A_Ao_N> = 0>
+
+Zero = Fr() + FrStar()
+Kane()
+
+H> = Momentum(Angular, Ao) + Gyrostat(Angmom, Cylinder, A, B, J)
+H = Mag(H>)
+
+Phi = acos(Dot(UnitVec(H>), A3>))
+
+UnitSystem kg, meter, sec
+
+Input tFinal=20, inetgStp=0.1, absErr=1.0E-07, relErr=1.0E-07
+Input J=0.07634, I1=1.25, I2=4.25, I3=5
+Input Omega=-20.0, w1=0, w2=0.02, w3=1
+
+Output t sec, Phi degs, H kg*m^2/sec
+
+Code Dynamics() tutor9.c
+
+Variables dw{3}'
+Constants nw3
+
+Check = Evaluate(Zero, w1=0, w1'=0, w2=0, w2'=0, w3=nw3, w3'=0)
+
+Perturb = Taylor(Zero, 1, w1=0:dw1, w1'=0:dw1', w2=0:dw2, w2'=0:dw2', w3=nw3:dw3, w3'=0:dw3')
+Solve(Perturb, dw{1:3}')
+
+Xm = [dw1, dw2, dw3]
+Xp = [dw1';dw2';dw3']
+Am = D(Xp, Xm)
+
+Variables Lambda
+Det = Det(Lambda*Diagmat(3,1) - Am)
+
+Det /= Lambda
+
+Det := Evaluate(Det, J=0.07634, I1=1.25, I2=4.25, I3=5, nw3=1)
+Save tutor9.all

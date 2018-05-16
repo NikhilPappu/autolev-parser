@@ -1,0 +1,54 @@
+Newtonian N
+Bodies A, B, C
+Points NA, AB, BC, CN
+
+MotionVariables qA', qB', qC'
+Constants H
+Constants LA=1, LB=2, LC=2, LN=1
+Mass A=mA=10, B=mB=20, C=mC=20
+
+Simprot(N,A,3,qA)
+Simprot(N,B,3,qB)
+Simprot(N,C,3,qC)
+
+P_NA_AB> = LA*A1>
+P_AB_BC> = LB*B1>
+P_CN_BC> = LC*C1>
+P_NA_CN> = LN*N2>
+
+w_A_N> = qA'*A3>
+w_B_N> = qA'*B3>
+w_C_N> = qA'*C3>
+
+v_AB_N> = Cross(w_A_N>, P_NA_AB>)
+v_BC_N> = Cross(w_C_N>, P_CN_BC>)
+
+Loop> = P_NA_AB> + P_AB_BC> + P_BC_CN> + P_CN_NA>
+ConfigurationConstraint[1] = Dot(Loop>, N1>)
+ConfigurationConstraint[2] = Dot(Loop>, N2>)
+
+Dependent = Dt(ConfigurationConstraint)
+Constraint(Dependent[qB', qC'])
+g = 9.81
+Force_AB> = 1/2*(Mass(A)*g*n1> + Mass(B)*g*n1>)
+Force_BC> = 1/2*(Mass(B)*g*n1> + Mass(C)*g*n1>)
+Force_BC> += H*N2>
+
+Zero = Fr()
+Zero[2] = ConfigurationConstraint[1]
+Zero[3] = ConfigurationConstraint[2]
+
+UnitSystem kg, meter, sec
+
+Input H=200 newton
+Input qA=30 deg, qB=60 deg, qC=30 deg
+Input absErr=1.0E-07, relErr=1.0E-07
+
+CODE Nonlinear(Zero, qA, qB, qC) tutor5.m
+
+Save tutor5.all
+
+
+
+
+

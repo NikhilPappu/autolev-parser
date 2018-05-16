@@ -1,0 +1,53 @@
+% File: tutor1.al
+% Problem: Examples of mathematical functions
+%-----------------------------------------------------
+% Mathematical declarations: variables, constants
+Variables x', y'
+Constants a, b, c, d
+Imaginary i
+%--------------------------------------
+% Create and expression and then rearrange (simplify) it
+E = (x+2*y)^2 + 3*(7+x)*(x+y)       %Create an expression
+Expand(E, 1:2)
+Factor(E, x)                        % Factor on x
+%------------------------------------
+%   Mathematical commands
+Dy = D(E, y)        % Partial derivative wrt y
+Dt = Dt(E)
+
+TY = Taylor(x*COS(y), 0:7, x=0, y=0)
+
+F = Evaluate(TY, x=1, y=0.5)
+
+Poly = Polynomial([a, b, c], x)
+
+Root1 = Roots([1; 2; 3; 4])
+
+Root2 = Roots(Poly, x, 2)
+
+RowMatrix = [1, 2, 3, 4]
+ColMatrix = [1; 2; 3; 4]
+
+Zero[1] = a*x + b*y - 1
+Zero[2] = c*x + d*y - Pi
+
+Solve(Zero, x, y)
+
+MO = [a, b; c, 0]
+
+MO[2,2] := d
+
+M1 = [MO, [1,2;3,4]]
+
+M2 = MO + MO
+M3 = MO*MO
+M4 = Transpose(MO)
+M5 = Inv(MO)
+M6 = Diagmat(3,1)
+M7 = Cols(MO, 1)
+M8 = Rows(MO, 2, 1:2)
+N1 = Rows(MO)
+N2 = Det(MO)
+M9 = Evaluate(MO, a=1, b=2, c=3, d=4)
+Lambda = Eig(M9)
+Eig(M9, EigValue, EigVec)

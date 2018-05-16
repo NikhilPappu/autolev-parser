@@ -1,0 +1,59 @@
+Newtonian N
+Frames A, B
+Particles P, Q
+Points O
+
+MotionVariables' u3', u4'
+MotionVariables' qA'', qB''
+Constants LA, LB
+Constants k, Lo
+Constants g
+Constants b, c
+Variables F1, F2
+Specified Stretch'
+
+Mass P=mP, Q=mQ
+Simprot(N, A, 3, qA)
+Simprot(N, B, 3, qB)
+
+P_O_P> = LA*A1>
+P_P_Q> = LB*B1>
+
+w_A_N> = qA'*A3>
+w_B_N> = qB'*B3>
+
+v_O_N> = 0>
+v2pts(N, A, O, P)
+v2pts(N, B, P, Q)
+
+Gravity(g*N1>)
+LOQ = Mag(P_O_Q>)
+Stretch = LOQ - Lo
+Uvec> = P_O_Q>/LOQ
+Stretch' = Dot(v_Q_N>, Uvec>)
+Force(O/Q, (-k*Stretch-b*Stretch')*Uvec>)
+Force_O> += F1*N1> + F2*N2>
+
+Torque_A> += -c*qA'*A3>
+Torque_B> += -c*qB'*B3>
+
+Zero = Fr() + FrStar()
+Zero := -Arrange(Zero, 1, g)
+Kane()
+
+UnitSystem kg, meter, sec
+
+Input tFinal=16, integStep=0.1, absErr=1.0E-07, relErr=1.0E-07
+Input LA=1 m, LB=2 m, k=200 n/m, Lo=1 m
+Input g=9.81 m/sec^2, mP=10 kg, mQ=20 kg
+Input b=100 n*sec/m, c=100 n*m*sec/rad
+Input qA=20 deg, qB=60 deg
+Input qA'=0 rad/sec, qB'=0 rad/sec
+
+EnergyCheck = NiCheck()
+
+Output t sec, qA deg, qB deg, EnergyCheck joules
+
+CODE ODE(Zero, qA'', qB'') tutor6.c
+
+Save tutor6.all
