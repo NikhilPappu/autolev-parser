@@ -5,16 +5,9 @@ from antlr4 import *
 from antlr4.InputStream import InputStream
 
 #       Mathematical Entities
-# Constants ✓
-# Variables ✓
-# Imaginary ✓
-# MotionVariables ✓
-# Specifieds ✓
-# Expression reconstruction
-# Assignments
-# Math commands and expressions
-# Reserved names and constants (T, Pi etc)
-# Matrices
+# 1. Update the PyDy for Autolev Users guide after going through the Autolev Tutorial.
+# 2. Parse all the code in the PyDy for Autolev Users guide.
+# 3. Run some of the output and compare the results with the results in the Autolev Tutorial.
 
 def writeConstants(self, ctx):
     l1 = list(filter(lambda x: self.sign[x] == "o",self.varList))
@@ -33,6 +26,7 @@ def writeConstants(self, ctx):
         " ".join(l3) + "', real=True, nonpositive=True)\n"
         self.file.write(a)
     self.varList = []
+
 def processConstants(self, ctx):
 
     # Process constant declarations of the type: Constants F = 3, g = 9.81
@@ -43,7 +37,7 @@ def processConstants(self, ctx):
         else: a = int(ctx.getChild(2).getText())
 
         # Populate the symbol table
-        self.symbol_table[str(ctx.ID().getText())] = (str(ctx.ID().getText()).lower(), a)
+        self.symbol_table[str(ctx.ID().getText()).lower()] = (str(ctx.ID().getText()).lower(), a)
 
         # Set the type
         self.type[str(ctx.ID().getText())] = "constants"
@@ -51,7 +45,7 @@ def processConstants(self, ctx):
     else: # Constants declarations of the type: Constants A, B
         if ctx.getChildCount()==1 or (ctx.getChildCount()>1 and ctx.getChild(1).getText() != "{"):
             #symbol table
-            self.symbol_table[str(ctx.ID().getText())] = str(ctx.ID().getText()).lower()
+            self.symbol_table[str(ctx.ID().getText()).lower()] = str(ctx.ID().getText()).lower()
             #type
             self.type[str(ctx.ID().getText())] = "constants"
 
@@ -81,7 +75,7 @@ def processConstants(self, ctx):
                 for i in range(num1, num2):
                     for j in range(num3, num4):
                         # symbol_table
-                        self.symbol_table[str(ctx.ID().getText()) + str(i) + str(j)] = \
+                        self.symbol_table[str(ctx.ID().getText()).lower() + str(i) + str(j)] = \
                         str(ctx.ID().getText() + str(i) + str(j)).lower()
                         #type
                         self.type[str(ctx.ID().getText()) + str(i) + str(j)] = "constants"
@@ -91,7 +85,7 @@ def processConstants(self, ctx):
                         self.sign[str(ctx.ID().getText()).lower() + str(i) + str(j)] = "o"
             for i in range(num1, num2):
                 # symbol_table
-                self.symbol_table[str(ctx.ID().getText()) + str(i)] = \
+                self.symbol_table[str(ctx.ID().getText()).lower() + str(i)] = \
                 str(ctx.ID().getText() + str(i)).lower()
                 #type
                 self.type[str(ctx.ID().getText()) + str(i)] = "constants"
@@ -103,7 +97,7 @@ def processConstants(self, ctx):
         else:
             for i in range(num1, num2):
                 # symbol_table
-                self.symbol_table[str(ctx.ID().getText()) + str(i)] = \
+                self.symbol_table[str(ctx.ID().getText()).lower() + str(i)] = \
                 str(ctx.ID().getText() + str(i)).lower()
                 #type
                 self.type[str(ctx.ID().getText()) + str(i)] = "constants"
@@ -132,12 +126,21 @@ def writeVariables(self, ctx):
         self.file.write(a)
     self.maxDegree = 0
     self.varList = []
+
+    for i,j in self.initializations:
+        self.file.write(i + " = " + j + "\n")
 def processVariables(self, ctx):
+    offset = 0
+    if ctx.getChildCount()>1 and ctx.getChild(1).getText() == "=":
+        offset = 2
+        text = ctx.getChild(0).getText().lower() + "'"*(ctx.getChildCount()-3) 
+        self.initializations.append((text, self.tree_property[ctx.getChild(2)]))
+
     # Process variables of the type: Variables qA, qB
-    if(ctx.getChildCount()==1):
+    if(ctx.getChildCount()-offset==1):
         self.maxDegree = 0
         # symbolTable
-        self.symbol_table[str(ctx.ID().getText())] = \
+        self.symbol_table[str(ctx.ID().getText()).lower()] = \
         str(ctx.ID().getText()).lower()
         # type
         if self.tree_property[ctx.parentCtx.getChild(0)].lower() == "variables":
@@ -155,10 +158,10 @@ def processVariables(self, ctx):
         self.sign[str(ctx.ID().getText()).lower()] = 0
     
     # Process variables of the type: Variables x', y''
-    elif(ctx.getChildCount()>1 and ctx.getChild(1).getText() != "{"):
-        if(ctx.getChildCount() - 1) > self.maxDegree:
-            self.maxDegree = ctx.getChildCount() - 1
-        for i in range(ctx.getChildCount()):
+    elif(ctx.getChildCount()-offset>1 and ctx.getChild(1).getText() != "{"):
+        if(ctx.getChildCount()-offset - 1) > self.maxDegree:
+            self.maxDegree = ctx.getChildCount()-offset - 1
+        for i in range(ctx.getChildCount()-offset):
             if i==0:
                  j = ""
             elif i==1:
@@ -169,7 +172,7 @@ def processVariables(self, ctx):
             self.sign[str(ctx.ID().getText()).lower() + str(j)] = i
             
             # symbolTable
-            self.symbol_table[str(ctx.ID().getText()) + "'"*i] = \
+            self.symbol_table[str(ctx.ID().getText()).lower() + "'"*i] = \
             str(ctx.ID().getText()).lower() + str(j)
             # type
             if self.tree_property[ctx.parentCtx.getChild(0)].lower() == "variables":
@@ -184,11 +187,11 @@ def processVariables(self, ctx):
             self.varList.append(str(ctx.ID().getText()).lower() + str(j))
     
 
-    elif ctx.getChildCount()>1 and ctx.getChild(1).getText() == "{":
+    elif ctx.getChildCount()-offset>1 and ctx.getChild(1).getText() == "{":
         # Process variables of the type: Variales y{3}', y{2}''
-        if ctx.getChildCount() > 4 and ctx.getChild(4).getText() == "'":
+        if ctx.getChildCount()-offset > 4 and ctx.getChild(4).getText() == "'":
 
-            dashCount = ctx.getChildCount() - 4
+            dashCount = ctx.getChildCount()-offset - 4
             if(dashCount) > self.maxDegree:
                 self.maxDegree = dashCount
 
@@ -203,7 +206,7 @@ def processVariables(self, ctx):
                 for z in range(1, num+1):
                     self.sign[str(ctx.ID().getText()).lower() + str(z) + str(j)] = i
                     # symbolTable
-                    self.symbol_table[str(ctx.ID().getText()) + str(z) + "'"*i] = \
+                    self.symbol_table[str(ctx.ID().getText()).lower() + str(z) + "'"*i] = \
                     str(ctx.ID().getText()).lower() + str(z) + str(j)
                     # type
                     if self.tree_property[ctx.parentCtx.getChild(0)].lower() == "variables":
@@ -224,7 +227,7 @@ def processVariables(self, ctx):
             self.maxDegree = 0
             num = int(ctx.getChild(2).getText())
             for i in range(1, num+1):
-                self.symbol_table[str(ctx.ID().getText()) + str(i)] = \
+                self.symbol_table[str(ctx.ID().getText()).lower() + str(i)] = \
                 str(ctx.ID().getText()).lower() + str(i)
                  # type
                 if self.tree_property[ctx.parentCtx.getChild(0)].lower() == "variables":
@@ -247,7 +250,7 @@ def writeImaginary(self, ctx):
     self.varList = []
 def processImaginary(self, ctx):
     # symbol_table
-    self.symbol_table[str(ctx.ID().getText())] = \
+    self.symbol_table[str(ctx.ID().getText()).lower()] = \
     str(ctx.ID().getText()).lower()
     # type
     self.type[str(ctx.ID().getText())] = "imaginary"
@@ -280,6 +283,8 @@ class myListener(AutolevListener):
 
         # Just a store for the max degree variable in a line.
         self.maxDegree = 0
+
+        self.initializations = []
 
     def getValue(self, node):
         return self.tree_property[node]
@@ -323,3 +328,55 @@ class myListener(AutolevListener):
             processVariables(self, ctx)
         elif (self.tree_property[ctx.parentCtx.getChild(0)]).lower() == "imaginary":
             processImaginary(self, ctx)
+    
+    def enterId(self, ctx):
+        pass
+    def exitId(self, ctx):
+        idText = (ctx.ID().getText()).lower() + "'"*(ctx.getChildCount()-1)
+        self.tree_property[ctx] = self.symbol_table[idText]
+    def enterInt(self, ctx):
+        intText = ctx.INT().getText()
+        self.tree_property[ctx] = intText
+    def exitInt(self, ctx):
+        pass
+    def enterFloat(self, ctx):
+        pass
+    def exitFloat(self, ctx):
+        floatText = ctx.FLOAT().getText()
+        self.tree_property[ctx] = floatText
+
+
+    # Expression Reconstruction :
+    # AddSub, MulDiv, negativeOne, parens, Exponent, functioncall, matrix 
+
+    def exitAddSub(self, ctx):
+        self.tree_property[ctx] = str(self.tree_property[ctx.getChild(0)]) \
+        + " " + ctx.getChild(1).getText()+ " " + str(self.tree_property[ctx.getChild(2)])
+    
+    def exitMulDiv(self, ctx):
+        self.tree_property[ctx] = str(self.tree_property[ctx.getChild(0)]) \
+        + ctx.getChild(1).getText() + str(self.tree_property[ctx.getChild(2)])
+
+    def exitNegativeOne(self, ctx):
+        self.tree_property[ctx] = "-1*" + str(self.tree_property[ctx.getChild()])
+
+    def exitParens(self, ctx):
+        self.tree_property[ctx] = "(" + str(self.tree_property[ctx.getChild(1)]) + ")"
+
+    def exitExponent(self, ctx):
+        self.tree_property[ctx] = str(self.tree_property[ctx.getChild(0)]) \
+        + "**" + str(self.tree_property[ctx.getChild(2)])
+    
+    # Assignment
+    def exitAssignment(self, ctx):
+        if ctx.getChildCount() == 4:
+            a = ctx.getChild(0).getText().lower() + ctx.getChild(1).getChildCount()*"'"
+
+            self.file.write(self.symbol_table[a] + " "
+            + ctx.getChild(2).getText() + " " + self.tree_property[ctx.getChild(2)])
+
+        if ctx.getChildCount() == 3:
+            a = ctx.getChild(0).getText().lower()
+            self.file.write(self.symbol_table[a]+ " " + ctx.getChild(1).getText() + " "
+            + self.tree_property[ctx.getChild(2)])
+    

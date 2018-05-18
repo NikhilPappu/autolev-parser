@@ -13,8 +13,9 @@ stat:   varDecl
 
 assignment:     vec ('='|'+='|'-='|':='|'*=') expr
 |               ID '[' INT (',' INT)* ']' ('='|'+='|'-='|':='|'*='|'/='|'^=') expr
-|               ID ('\'')* ('='|'+='|'-='|':='|'*='|'/='|'^=') expr;               
+|               ID diff ('='|'+='|'-='|':='|'*='|'/='|'^=') expr;               
 
+diff: ('\'')*;
 functionCall:   ID '(' (expr (',' expr)*)? ')'
 |               (Mass|Inertia) '(' ID (',' ID)* ')'; 
 
@@ -60,8 +61,8 @@ vec:  ID ('>')+
 |      '1>>';
 
 expr:   expr '^'<assoc=right> expr  # Exponent
-    |   expr op=('*'|'/') expr      # MulDiv
-    |   expr op=('+'|'-') expr      # AddSub
+    |   expr ('*'|'/') expr      # MulDiv
+    |   expr ('+'|'-') expr      # AddSub
     |   '-' expr                    # negativeOne
     |   FLOAT                       # float
     |   INT                         # int
@@ -71,7 +72,6 @@ expr:   expr '^'<assoc=right> expr  # Exponent
     |   functionCall                # function
     |   matrix                      # matrices  
     |   '(' expr ')'                # parens
-    |   INT ':' INT                 # rangess 
     |   ID('\'')* '=' expr          # idEqualsExpr
     |   EXP                         # exp
     |   expr ':' expr               # colon
