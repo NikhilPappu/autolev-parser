@@ -1,47 +1,26 @@
-Constants A, B
-Constants C+
-Constants D-
-Constants K{4}
-Constants a{2:4}
-Constants b{1:2, 1:2}
-Specified Phi
-
-Specified F = k1*x + k2*theta
-+ k3*x' + k4*theta'
-
-Variables q, s
-
-Variables x''
-
-Variables y{2}'
-
-MotionVariables u{2}
-
-Imaginary j
-
-Tina = 2*pi
-
-abs(x)^3 + sin(x)^2 +
-acos(x)
+Variables x', y'
+Constants a, b, c, d
+Imaginary i
 
 E = (x+2*y)^2 + 3*(7+x)*(x+y)
-Expand(E, n:m)
+Expand(E, 1:2)
+
+Variables z
+z = Expand(E, 1:2)
+z2 = Expand((x+1)^2, 1:2)
+
 Factor(E, x)
-Coeff(y, x)
-Replace(y, sin(x)=3)
+z = Factor(e, x)
 
 Dy = D(E, y)
+
 Dt = Dt(E)
 
-TY = Taylor(x*cos(x), 0:7,
-x = 0)
+Ty = Taylor(x^2, 0:7, x=0, y=0)
 
-F = Evaluate(E, x=a, y=2)
+F = Evaluate(TY, x=1, y=0.5)
 
 P = Polynomial([a, b, c], x)
 
-Roots(Polynomial[a, b, c], x, 2)
-
-Solve(A, x1, x2)
-
-% Matrices
+Roots1 = Roots([1; 2; 3; 4])
+Roots2 = Roots(P, x, 2)

@@ -1,0 +1,29 @@
+import sympy.physics.mechanics as me
+import sympy as sm
+
+x, y = me.dynamicsymbols('x y')
+xd, yd = me.dynamicsymbols('x y', 1)
+a, b, c, d=sm.symbols('a b c d', real=True)
+i=sm.symbols('i')
+i=sm.I
+e = (x + 2*y)**2 + 3*(7 + x)*(x + y)
+e = e.expand()
+z = me.dynamicsymbols('z')
+z = (e).expand()
+z2 = ((x + 1)**2).expand()
+e = e.factor(x)
+z = (e).factor(x)
+
+dy = (e).diff(y)
+
+dt = (e).diff(sm.Symbol('t'))
+
+ty = (x**2).series(x, 0, 7).removeO().series(y, 0, 7).removeO()
+
+f = (ty).subs({x:1,y:0.5})
+p = sm.Poly([a,b,c], x)
+
+roots1 = sm.solve(sm.Poly([1,2,3,4], x), x)
+
+roots2 = sm.solve(p, x)
+

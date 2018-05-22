@@ -1,0 +1,173 @@
+Constants A, B
+X = 4*(A+B) - 3*(a-b)
+%--------------------
+Constants A,B = 3
+Constants C+
+Constants D-
+Specified Phi
+Variables q, s
+Variables x''
+Variables y{3}'
+MotionVariables u{3}
+MotionVariables' w'
+Imaginary j
+Tina = 2*pi
+%--------------------
+Variables x, y
+Constants a{1:2, 1:2}, b{1:2}
+eqn[1] = a11*x + a12*y - b1
+eqn[2] = a21*x + a22*y - b2
+Input a11=1, a12=2, a21=3, a22=4, b1=5, b2=6
+Code Algebraic(eqn, x, y) becky.for
+%--------------------
+Variables x', y'
+Constants a, b, c, d
+Imaginary i
+%--------------------
+E = (x+2*y)^2 + 3*(7+x)*(x+y)
+Expand(E, 1:2)
+Factor(E, x)
+Dy = D(E, y)
+Dt = Dt(E)
+Ty = Taylor(x*COS(y), 0:7, x=0, y=0)
+F = Evaluate(TY, x=1, y=0.5)
+Poly = Polynomial([a,b,c], x)
+Roots1 = Roots([1; 2; 3; 4])
+Roots2 = Roots(Poly, x, 2)
+%--------------------
+ColMatrix = [1; 2; 3; 4]
+RowMatrix = [1, 2, 3, 4]
+
+Zero[1] = a*x + b*y - 1
+Zero[2] = c*x + d*y - Pi
+
+Solve(Zero, x, y)
+
+MO = [a, b; c, 0]
+MO[2, 2] := d
+
+M1 = [MO, [1,2;3,4]]
+M2 = MO + MO
+M3 = MO * MO
+M4 = Transpose(MO)
+M5 = Inv(MO)
+M6 = Diagmat(3, 1)
+M7 = Cols(Mo, 1)
+M8 = Rows(MO, 2, 1:2)
+N1 = Rows(MO)
+N2 = Det(MO)
+M9 = Evaluate(MO, a=1, b=2, c=3, d=4)
+Lambda = Eig(M9)
+Eig(M9, EigValue, EigVec)
+%--------------------
+% + - * / ^
+% += -= *= /= ^=
+abs(x)
+cos(x) sin(x) tan(x)
+cosh(x) sinh(x) tanh(x)
+acos(x) asin(x) atan(x)
+atan2(y, x)
+log(x) log10(x)
+exp(x)
+sqr(x) sqrt(x)
+factorial(x)
+ceil(x) floor(x)
+int(x) round(x)
+max(x, y) min(x, y)
+sign(x)
+%--------------------
+AutoTaylor(0:2,w=a,x=0)
+D(y, x)
+Dt(y)
+Evaluate(y,a=x,b=2)
+Polynomial(y,x,n)
+Roots(A)
+Roots(y,x,n)
+Solve(A,x1,x2)
+Solve(option,A,X)
+Spline(...)
+Taylor(y,0:2,w=a,x=0)
+Units(n*m, lbf*ft)
+%--------------------
++ - *
+Cols(A)
+Cols(A,1,3,4)
+Det(A)
+Diagmat(n,m,x)
+Eig(A)
+Eig(A,LAMBDA,V)
+Element(A,2,3)
+Inv(A)
+Matrix
+Polynomial(A, x)
+Rows(A)
+Rows(A,1:3,5:7)
+Trace(A)
+Transpose(A)
+%--------------------
+Arrange(y,n,x) *
+AutoZ(y,x)
+Coef(y,x)
+Epsilon(y,0.1)
+Exclude(y,x)
+Expand(y,n:m) *
+Explicit(y,x)
+Factor(y,x) *
+Include(y,x)
+Replace(y,sin(x)=3)
+RHS(y)
+Zee(y) *
+Zee(y,x) *
+%--------------------
+
+
+
+
+%--------------------
+Variables dx''
+Variables dtheta''
+Imaginary i
+
+Check = Evaluate(Zero, x=0, x'=0, x''=0, theta=0, theta'=0, theta''=0)
+
+Perturb = Taylor(Zero, 1, x=0:dx, x'=0:dx', x''=0:dx'', &
+theta=0:dtheta, theta'=0:dtheta', theta''=0:dtheta'')
+
+Solve(Perturb, dx'', dtheta'')
+
+Xm = [dx; dtheta; dx'; dtheta']
+Xp = [dx'; dtheta'; dx''; dtheta'']
+
+A = D(Xp, Transpose(Xm))
+
+Roots1 = Eig(evaluate(A, k1=0, k2=0, k3-0, k4=0))
+Roots2 = Eig(evaluate(A, k1=1, k2=-244, k3=5.4, k4=-59))
+%--------------------
+Variables dw{3}'
+Constants nw3
+
+Check = Evaluate(Zero, w1=0, w1'=0, w2=0, w2'=0, w3=nw3, w3'=0)
+
+Perturb = Taylor(Zero, 1, w1=0:dw1, w1'=dw1', w2=0:dw2, &
+w3=nw3:dw3, w3'=0:dw3')
+Solve(Perturb, dw{1:3}')
+
+Xm = [dw1, dw2, dw3]
+Xp = [dw1', dw2', dw3']
+Am = D(Xp, Xm)
+
+Variables Lambda
+Det = Det(Lambda*Diagmat(3,1) - Am)
+Det /= Lambda
+
+Det := Evaluate(Det, J=0.07634, I1=1.25, I2=4.25, I3=5, nw3=1)
+%-------------------------------------------------------------
+% Settings
+AutoEpsilon 1.0E-7
+AutoExpress on/off
+AutoRHS on/off/all
+AutoZ on/off
+COMPLEX on/off/auto
+Degrees on/off
+Factoring on/off
+%--------------------

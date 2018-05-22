@@ -1,13 +1,9 @@
 from AutolevListener import AutolevListener
+from AutolevParser import *
 
 import sys
 from antlr4 import *
 from antlr4.InputStream import InputStream
-
-#       Mathematical Entities
-# 1. Update the PyDy for Autolev Users guide after going through the Autolev Tutorial.
-# 2. Parse all the code in the PyDy for Autolev Users guide.
-# 3. Run some of the output and compare the results with the results in the Autolev Tutorial.
 
 def writeConstants(self, ctx):
     l1 = list(filter(lambda x: self.sign[x] == "o",self.varList))
@@ -286,6 +282,10 @@ class myListener(AutolevListener):
 
         self.initializations = []
 
+        self.matrices={}
+
+        self.inputs = []
+
     def getValue(self, node):
         return self.tree_property[node]
 
@@ -332,8 +332,16 @@ class myListener(AutolevListener):
     def enterId(self, ctx):
         pass
     def exitId(self, ctx):
-        idText = (ctx.ID().getText()).lower() + "'"*(ctx.getChildCount()-1)
-        self.tree_property[ctx] = self.symbol_table[idText]
+        if(ctx.ID().getText().lower()=="pi"):
+            self.tree_property[ctx] = "sm.pi"
+        elif(ctx.ID().getText().lower()=="t"):
+            self.tree_property[ctx]="me.dynamicsymbols._t"
+        else:
+            try:
+                idText = (ctx.ID().getText()).lower() + "'"*(ctx.getChildCount()-1)
+                self.tree_property[ctx] = self.symbol_table[idText]
+            except Exception:
+                pass
     def enterInt(self, ctx):
         intText = ctx.INT().getText()
         self.tree_property[ctx] = intText
@@ -358,7 +366,7 @@ class myListener(AutolevListener):
         + ctx.getChild(1).getText() + str(self.tree_property[ctx.getChild(2)])
 
     def exitNegativeOne(self, ctx):
-        self.tree_property[ctx] = "-1*" + str(self.tree_property[ctx.getChild()])
+        self.tree_property[ctx] = "-1*" + str(self.symbol_table[ctx.getChild(1).getText()])
 
     def exitParens(self, ctx):
         self.tree_property[ctx] = "(" + str(self.tree_property[ctx.getChild(1)]) + ")"
@@ -369,14 +377,168 @@ class myListener(AutolevListener):
     
     # Assignment
     def exitAssignment(self, ctx):
-        if ctx.getChildCount() == 4:
-            a = ctx.getChild(0).getText().lower() + ctx.getChild(1).getChildCount()*"'"
+        if ctx.getChild(1).getText() == "[":
+            text = ctx.ID().getText().lower()
+            if ctx.ID().getText().lower() not in self.matrices.keys():
+                self.matrices.update({text:[text + "_matrix", 1, 1]})
+                self.file.write((self.matrices[text])[0] + " = " + "sm.Matrix([[0]])\n")
+            if ctx.getChild(2).getChildCount()==1:
+                indexNum = int(ctx.getChild(2).getChild(0).getText())
+                if indexNum == (self.matrices[text])[2]:
+                    self.file.write((self.matrices[text])[0] +"[" + \
+                    str(indexNum-1)+ "]" + " = " + self.tree_property[ctx.getChild(5)] +"\n")
+                elif indexNum == (self.matrices[text])[2] + 1:
+                    self.file.write((self.matrices[text])[0] +"="+ (self.matrices[text])[0] \
+                    + ".col_insert(" + str(indexNum-1) + ", " + "sm.Matrix([[0]])" + ")\n")
+                    (self.matrices[text])[2]+=1
+                    self.file.write((self.matrices[text])[0] +"[" + \
+                    str(indexNum-1)+ "]" + " = " + self.tree_property[ctx.getChild(5)] +"\n")
+        else:
+            if ctx.getChildCount() == 4:
+                a = ctx.getChild(0).getText().lower() + ctx.getChild(1).getChildCount()*"'"
 
-            self.file.write(self.symbol_table[a] + " "
-            + ctx.getChild(2).getText() + " " + self.tree_property[ctx.getChild(2)])
+                self.file.write(self.symbol_table[a] + " "
+                + ctx.getChild(2).getText() + " " + self.tree_property[ctx.getChild(3)]+"\n")
 
-        if ctx.getChildCount() == 3:
-            a = ctx.getChild(0).getText().lower()
-            self.file.write(self.symbol_table[a]+ " " + ctx.getChild(1).getText() + " "
-            + self.tree_property[ctx.getChild(2)])
+            if ctx.getChildCount() == 3:
+                a = ctx.getChild(0).getText().lower()
+                try:
+                    b = self.symbol_table[a]
+                except KeyError:
+                    self.symbol_table[a] = a
+                self.file.write(self.symbol_table[a]+ " " + ctx.getChild(1).getText() + " "
+                + self.tree_property[ctx.getChild(2)]+"\n")
     
+    def exitInputs2(self, ctx):
+        self.inputs.append((self.symbol_table[ctx.getChild(0).getText()],\
+        str(ctx.getChild(2).getText())))
+
+    def exitCodegen(self, ctx):
+        if ctx.getChild(1).getChild(0).getText() == "Algebraic":
+            matrixName = (self.matrices[ctx.getChild(1).getChild(2).getText()])[0]
+            e = []
+            d = []
+            for i in range(4, ctx.getChild(1).getChildCount()-1):
+                a = ctx.getChild(1).getChild(i).getText()
+                try:
+                    a = self.tree_property[ctx.getChild(1).getChild(i).getText()]
+                except Exception: pass
+                e.append(a)
+
+            for i, j in self.inputs:
+                d.append(self.symbol_table[i]+":"+j)
+            self.file.write(matrixName + "_list" + " = " + "[]\n")
+            self.file.write("for i in " + matrixName + ":\n\t" + \
+            matrixName + "_list" + ".append(i.subs({" + ", ".join(d) + "}))\n")
+            self.file.write("print(sm.linsolve("+ matrixName + "_list"+ ", " + "".join(e) + "))\n")
+        
+    def exitFunction(self, ctx):
+        # Expand(E, n:m) *
+        # TODO What does n:m do and how do we specify that in SymPy
+        if ctx.getChild(0).getChild(0).getText().lower() == "expand":
+            expr = self.tree_property[ctx.getChild(0).getChild(2)]
+            self.tree_property[ctx] = "(" + expr + ")"+ "." + "expand()"
+
+        # Factor(E, x) *
+        # TODO Check if you can make SymPy get the same output as Autolev
+        if ctx.getChild(0).getChild(0).getText().lower() == "factor":
+            expr = self.tree_property[ctx.getChild(0).getChild(2)]
+            self.tree_property[ctx] = "(" + expr + ")" + "." + "factor(" + \
+            self.tree_property[ctx.getChild(0).getChild(4)] + ")\n"
+
+        # D(E, y)
+        if ctx.getChild(0).getChild(0).getText().lower() == "d":
+            expr = self.tree_property[ctx.getChild(0).getChild(2)]
+            self.tree_property[ctx] = "(" + expr + ")" + "." + "diff(" + \
+            self.tree_property[ctx.getChild(0).getChild(4)] + ")\n"
+        
+        # Dt(E)
+        if ctx.getChild(0).getChild(0).getText().lower() == "dt":
+            expr = self.tree_property[ctx.getChild(0).getChild(2)]
+            self.tree_property[ctx] = "(" + expr + ")" + "." + "diff(" + "sm.Symbol('t')" + ")\n"
+
+        # Taylor(e, n:m, x=0, y=0)
+        # TODO: Make it work for dynamicsymbols.
+        if ctx.getChild(0).getChild(0).getText().lower() == "taylor":
+            exp = self.tree_property[ctx.getChild(0).getChild(2)]
+            order = self.tree_property[ctx.getChild(0).getChild(4).getChild(2)]
+            # 2x-1 + 7 = ctx.getChild(0).getChildCount()
+            x = (ctx.getChild(0).getChildCount()-6)//2
+            l = []
+            for i in range(x):
+                index = 6 + 2*i
+                child = ctx.getChild(0).getChild(index)
+                l.append(".series(" + self.tree_property[child.getChild(0)]\
+                +", "+ self.tree_property[child.getChild(2)]\
+                + ", " + order + ").removeO()")
+            self.tree_property[ctx] = "(" + exp + ")" + "".join(l) + "\n"
+        
+        # Evaluate(TY, x=1, y=0.5)
+        if ctx.getChild(0).getChild(0).getText().lower() == "evaluate":
+            l = []
+            # 2x-1 + 5 = ctx.getChild(0).getChildCount()
+            x = (ctx.getChild(0).getChildCount()-4)//2
+            for i in range(x):
+                index = 4 + 2*i
+                child = ctx.getChild(0).getChild(index)
+                l.append(self.tree_property[child.getChild(0)] + ":" + \
+                self.tree_property[child.getChild(2)])
+            self.tree_property[ctx] = "(" +self.tree_property[ctx.getChild(0).getChild(2)]\
+            + ")" ".subs({" + ",".join(l) + "})"
+
+        # Polynomial([a, b, c], x)
+        if ctx.getChild(0).getChild(0).getText().lower() == "polynomial":
+            l = []
+            for i in range(ctx.getChild(0).getChild(2).getChild(0).getChildCount()):
+                child = ctx.getChild(0).getChild(2).getChild(0).getChild(i)
+                if child in self.tree_property.keys():
+                    a = self.tree_property[child]
+                else:
+                    a = child.getText()
+                                    
+                l.append(a)
+            self.tree_property[ctx] = "sm.Poly(" + "".join(l) + ", " +\
+            self.tree_property[ctx.getChild(0).getChild(4)] + ")\n"
+
+        # Roots(Poly, x, 2)   Roots([1; 2; 3; 4])
+        if ctx.getChild(0).getChild(0).getText().lower() == "roots":
+            if ctx.getChild(0).getChildCount()==4:
+                matrixpos = ctx.getChild(0).getChild(2).getChild(0)
+                l = []
+                for i in range(matrixpos.getChildCount()):
+                    if matrixpos.getChild(i) in self.tree_property.keys():
+                        l.append(self.tree_property[matrixpos.getChild(i)])
+                    elif matrixpos.getChild(i).getText() == ";":
+                        l.append(",")
+                    else:
+                        l.append(matrixpos.getChild(i).getText())
+                # sm.solve(sm.Poly([1, 2, 3, 4], x), x)
+                self.tree_property[ctx] = "sm.solve(sm.Poly(" + "".join(l) + ", x), x)\n"
+            else:
+                self.tree_property[ctx] = "sm.solve(" +\
+                self.tree_property[ctx.getChild(0).getChild(2)] + ", " +\
+                self.tree_property[ctx.getChild(0).getChild(4)] + ")\n"         
+
+    def exitFunctionCall(self, ctx):
+        if ctx.parentCtx.getRuleIndex() == AutolevParser.RULE_stat:
+            # Expand(E, n:m) *
+            # TODO What does n:m do and how do we specify that in SymPy.
+            if ctx.getChild(0).getText().lower() == "expand":
+                if ctx.getChild(2).getChildCount()==1:
+                    symbol = self.symbol_table[ctx.getChild(2).getText().lower()]
+                    self.file.write(symbol + " = " + symbol + "." + "expand()\n")
+                else:
+                    expr = self.tree_property[ctx.getChild(2)]
+                    self.file.write("(" + expr + ")" + "." + "expand()\n")
+            # Factor(E, x) *
+            # TODO Check if you can make SymPy get the same output as Autolev
+            if ctx.getChild(0).getText().lower() == "factor":
+                if ctx.getChild(2).getChildCount()==1:
+                    symbol = self.symbol_table[ctx.getChild(2).getText().lower()]
+                    self.file.write(symbol + " = " + symbol + "." + "factor(" + ctx\
+                    .getChild(4).getText() + ")\n")
+                else:
+                    expr = self.tree_property[ctx.getChild(2)]
+                    self.file.write("(" + expr + ")" + "." +  "factor(" + 
+                    self.tree_property[ctx.getChild(4)] + ")\n")
+            

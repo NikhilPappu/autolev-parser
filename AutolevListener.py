@@ -35,6 +35,24 @@ class AutolevListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AutolevParser#index.
+    def enterIndex(self, ctx:AutolevParser.IndexContext):
+        pass
+
+    # Exit a parse tree produced by AutolevParser#index.
+    def exitIndex(self, ctx:AutolevParser.IndexContext):
+        pass
+
+
+    # Enter a parse tree produced by AutolevParser#diff.
+    def enterDiff(self, ctx:AutolevParser.DiffContext):
+        pass
+
+    # Exit a parse tree produced by AutolevParser#diff.
+    def exitDiff(self, ctx:AutolevParser.DiffContext):
+        pass
+
+
     # Enter a parse tree produced by AutolevParser#functionCall.
     def enterFunctionCall(self, ctx:AutolevParser.FunctionCallContext):
         pass
